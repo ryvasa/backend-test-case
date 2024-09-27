@@ -45,7 +45,7 @@ export class BooksController {
   })
   @Get(':code')
   findOne(@Param('code') code: string): Promise<Book> {
-    return this.booksService.findOne(code);
+    return this.booksService.findOneByCode(code);
   }
 
   @ApiOperation({ summary: 'Update a book by book code' })

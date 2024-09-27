@@ -7,5 +7,5 @@ export class CreatePenaltyDto {
 
   @IsNotEmpty()
   @IsString()
-  book_loan_id: string;
+  book_loan_code: string;
 }

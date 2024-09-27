@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
-import { PenaltyModule } from './penalty/penalty.module';
-import { BookLoanModule } from './book-loan/book-loan.module';
 import { BooksModule } from './books/books.module';
 import { MembersModule } from './members/members.module';
+import { PenaltiesModule } from './penalties/penalties.module';
+import { BookLoansModule } from './book-loans/book-loans.module';
 
 @Module({
   imports: [
@@ -12,10 +12,10 @@ import { MembersModule } from './members/members.module';
       isGlobal: true,
     }),
     DatabaseModule,
+    BookLoansModule,
     BooksModule,
     MembersModule,
-    PenaltyModule,
-    BookLoanModule,
+    PenaltiesModule,
   ],
 })
 export class AppModule {}

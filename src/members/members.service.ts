@@ -11,7 +11,9 @@ export class MembersService {
     @InjectRepository(Member) private memberRepository: Repository<Member>,
   ) {}
   async create(createMemberDto: CreateMemberDto): Promise<Member> {
+    const count = await this.memberRepository.count();
     const member: Member = this.memberRepository.create(createMemberDto);
+    member.code = `M${(count + 1).toString().padStart(3, '0')}`;
     return await this.memberRepository.save(member);
   }
 

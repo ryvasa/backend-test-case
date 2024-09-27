@@ -1,4 +1,4 @@
-import { BookLoan } from 'src/book-loan/entities/book-loan.entity';
+import { BookLoan } from 'src/book-loans/entities/book-loan.entity';
 import {
   Column,
   CreateDateColumn,
@@ -27,6 +27,9 @@ export class Book {
   @UpdateDateColumn()
   updated_date: Date;
 
-  @OneToMany(() => BookLoan, (bookLoan) => bookLoan.book)
+  @OneToMany(() => BookLoan, (bookLoan) => bookLoan.book, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   book_loans: BookLoan[];
 }

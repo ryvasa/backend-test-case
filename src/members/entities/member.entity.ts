@@ -1,5 +1,5 @@
-import { BookLoan } from 'src/book-loan/entities/book-loan.entity';
-import { Penalty } from 'src/penalty/entities/penalty.entity';
+import { BookLoan } from 'src/book-loans/entities/book-loan.entity';
+import { Penalty } from 'src/penalties/entities/penalty.entity';
 import {
   Column,
   CreateDateColumn,
@@ -22,9 +22,15 @@ export class Member {
   @UpdateDateColumn()
   updated_date: Date;
 
-  @OneToMany(() => BookLoan, (bookLoan) => bookLoan.member)
+  @OneToMany(() => BookLoan, (bookLoan) => bookLoan.member, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   book_loans: BookLoan[];
 
-  @OneToMany(() => Penalty, (penalty) => penalty.member)
+  @OneToMany(() => Penalty, (penalty) => penalty.member, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   penalties: Penalty[];
 }
