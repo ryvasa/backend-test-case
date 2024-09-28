@@ -32,6 +32,30 @@
 $ npm install
 ```
 
+## Setup the environtment
+
+create a .env file an add
+```bash
+DB_HOST='your-db-host'
+DB_PORT='your-db-port'
+DB_USERNAME='your-db-username'
+DB_PASSWORD='your-db-password'
+DB_DATABASE=backend_test_case
+
+PORT='port-number'
+```
+
+## Setup the database
+
+create a database called 'backend_test_case'
+
+## Seed the database
+
+you can seed the database by running the following command
+```bash
+npm run seed
+```
+
 ## Compile and run the project
 
 ```bash
