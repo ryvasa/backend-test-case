@@ -8,10 +8,16 @@ import {
   Delete,
 } from '@nestjs/common';
 import { MembersService } from './members.service';
-import { CreateMemberDto } from './dto/create-member.dto';
-import { UpdateMemberDto } from './dto/update-member.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Member } from './entities/member.entity';
+import {
+  CreateMemberDto,
+  MemberActiveLoanResponseDto,
+  MemberLoanResponseDto,
+  MemberMessageResponseDto,
+  MemberResponseDto,
+  UpdateMemberDto,
+} from './dto';
 
 @ApiTags('Members')
 @Controller('members')
@@ -22,53 +28,72 @@ export class MembersController {
   @ApiResponse({
     status: 201,
     description: 'Member is created successfully.',
+    type: MemberResponseDto,
   })
   @Post()
   create(@Body() createMemberDto: CreateMemberDto): Promise<Member> {
-    return this.memberService.create(createMemberDto);
+    return this.memberService.createMember(createMemberDto);
   }
 
-  @ApiOperation({ summary: 'Get all members' })
+  @ApiOperation({
+    summary: 'Get all members with active borrowed book (Member check)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Members are returned successfully.',
-    type: CreateMemberDto,
+    type: MemberActiveLoanResponseDto,
   })
   @Get()
-  findAll(): Promise<Member[]> {
-    return this.memberService.findAll();
+  findAllMember(): Promise<Member[]> {
+    return this.memberService.findAllMember();
+  }
+
+  @ApiOperation({
+    summary: 'Get all members with all book loans history (Member check)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Members are returned successfully.',
+    type: MemberLoanResponseDto,
+  })
+  @Get('loans')
+  findAllMemberHistory(): Promise<Member[]> {
+    return this.memberService.findAllMemberHistoryLoan();
   }
 
   @ApiOperation({ summary: 'Get a member' })
   @ApiResponse({
     status: 200,
     description: 'Member is returned successfully.',
+    type: MemberResponseDto,
   })
   @Get(':code')
   findOne(@Param('code') code: string): Promise<Member> {
-    return this.memberService.findOne(code);
+    return this.memberService.findOneMember(code);
   }
 
   @ApiOperation({ summary: 'Update a member' })
   @ApiResponse({
     status: 200,
     description: 'Member is updated successfully.',
+    type: MemberResponseDto,
   })
   @Patch(':code')
   update(
     @Param('code') code: string,
     @Body() updateMemberDto: UpdateMemberDto,
   ): Promise<Member> {
-    return this.memberService.update(code, updateMemberDto);
+    return this.memberService.updateMember(code, updateMemberDto);
   }
 
   @ApiOperation({ summary: 'Delete a member' })
   @ApiResponse({
     status: 200,
     description: 'Member is deleted successfully.',
+    type: MemberMessageResponseDto,
   })
   @Delete(':code')
   remove(@Param('code') code: string): Promise<object> {
-    return this.memberService.remove(code);
+    return this.memberService.deleteMember(code);
   }
 }

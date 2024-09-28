@@ -1,16 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateBookDto } from './dto/create-book.dto';
-import { UpdateBookDto } from './dto/update-book.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Book } from './entities/book.entity';
-import { QueryRunner, Repository } from 'typeorm';
+import { MoreThan, QueryRunner, Repository } from 'typeorm';
+import { CreateBookDto, UpdateBookDto } from './dto';
 
 @Injectable()
 export class BooksService {
   constructor(
     @InjectRepository(Book) private bookRepository: Repository<Book>,
   ) {}
-  async create(
+  async addBook(
     createBookDto: CreateBookDto,
     queryRunner?: QueryRunner,
   ): Promise<Book> {
@@ -27,14 +26,17 @@ export class BooksService {
     }
     const book: Book = this.bookRepository.create(createBookDto);
     return manager.save(book);
-    // return await this.bookRepository.save(book);
   }
 
-  async findAll(): Promise<Book[]> {
-    return await this.bookRepository.find();
+  async findAllBook(): Promise<Book[]> {
+    return await this.bookRepository.find({
+      where: {
+        stock: MoreThan(0),
+      },
+    });
   }
 
-  async findOneByCode(code: string): Promise<Book> {
+  async findOneBook(code: string): Promise<Book> {
     const book: Book = await this.bookRepository.findOneBy({
       code: code,
     });
@@ -44,7 +46,7 @@ export class BooksService {
     return book;
   }
 
-  async update(
+  async updateBook(
     code: string,
     updateBookDto: UpdateBookDto,
     queryRunner?: QueryRunner,
@@ -52,15 +54,14 @@ export class BooksService {
     const manager = queryRunner
       ? queryRunner.manager
       : this.bookRepository.manager;
-    const book: Book = await this.findOneByCode(code);
+    const book: Book = await this.findOneBook(code);
     Object.assign(book, updateBookDto);
     return manager.save(book);
-    // return this.bookRepository.save(book);
   }
 
-  async remove(code: string): Promise<object> {
-    const book: Book = await this.findOneByCode(code);
+  async deleteBook(code: string): Promise<object> {
+    const book: Book = await this.findOneBook(code);
     await this.bookRepository.remove(book);
-    return { message: 'Book has been deleted' };
+    return { message: 'Book is deleted successfully.' };
   }
 }

@@ -1,6 +1,10 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { CreatePenaltyDto } from './dto/create-penalty.dto';
-import { UpdatePenaltyDto } from './dto/update-penalty.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Penalty } from './entities/penalty.entity';
 import { QueryRunner, Repository } from 'typeorm';
@@ -22,14 +26,16 @@ export class PenaltiesService {
     createPenaltyDto: CreatePenaltyDto,
     queryRunner?: QueryRunner,
   ): Promise<Penalty> {
+    await this.checkExsistPenaltyByBookLoan(createPenaltyDto.book_loan_code);
+
     const manager = queryRunner
       ? queryRunner.manager
       : this.penaltyRepository.manager;
 
-    const member: Member = await this.membersService.findOne(
+    const member: Member = await this.membersService.findOneMember(
       createPenaltyDto.member_code,
     );
-    const bookLoan: BookLoan = await this.bookLoansService.findOne(
+    const bookLoan: BookLoan = await this.bookLoansService.findOneBookLoan(
       createPenaltyDto.book_loan_code,
     );
     const count: number = await this.penaltyRepository.count();
@@ -41,19 +47,64 @@ export class PenaltiesService {
     });
 
     return manager.save(penalty);
-    // return this.penaltyRepository.save(penalty);
   }
 
   findAllPenalty(): Promise<Penalty[]> {
     return this.penaltyRepository.find();
   }
 
-  async findOnePenaltyByMember(code: string): Promise<any> {
-    const penalty = this.penaltyRepository
+  async findPenaltiesByMember(code: string): Promise<Penalty[]> {
+    const penalty = await this.penaltyRepository
       .createQueryBuilder('penalties')
       .leftJoinAndSelect('penalties.member', 'member')
-      .where('penalties.member = :member', { member: code });
+      .leftJoinAndSelect('penalties.book_loan', 'book_loan')
+      .leftJoinAndSelect('book_loan.book', 'book')
+      .where('penalties.member = :member', { member: code })
+      .select([
+        'penalties.code',
+        'penalties.penalty_start_date',
+        'penalties.penalty_end_date',
+        'member.code',
+        'member.name',
+        'book_loan',
+        'book.code',
+        'book.title',
+        'book.author',
+      ])
+      .orderBy('penalties.penalty_end_date', 'DESC')
+      .getMany();
 
     return penalty;
+  }
+
+  async checkPenaltyMember(code: string): Promise<void> {
+    // mengambil hanya satu data dengan penalty end date paling lama
+    const penalty = await this.penaltyRepository
+      .createQueryBuilder('penalties')
+      .leftJoinAndSelect('penalties.member', 'member')
+      .where('penalties.member = :member', { member: code })
+      .andWhere('penalties.penalty_end_date > :date', { date: new Date() })
+      .orderBy('penalties.penalty_end_date', 'DESC')
+      .getOne();
+
+    if (penalty) {
+      throw new Error(
+        `Member ${penalty.member.code} memiliki penalty sampai tanggal ${penalty.penalty_end_date}`,
+      );
+    }
+  }
+
+  async checkExsistPenaltyByBookLoan(code: string): Promise<void> {
+    const penalty = await this.penaltyRepository
+      .createQueryBuilder('penalties')
+      .leftJoinAndSelect('penalties.book_loan', 'book_loan')
+      .where('book_loan.code = :code', { code })
+      .getOne();
+
+    if (penalty) {
+      throw new BadRequestException(
+        `Peminjaman ${penalty.book_loan.code} telah diberikan penalty sebelumnya, dan akan selesai pada ${penalty.penalty_end_date}`,
+      );
+    }
   }
 }

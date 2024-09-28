@@ -1,8 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
 import { BookLoansService } from './book-loans.service';
-import { CreateBookLoanDto } from './dto/create-book-loan.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BookLoan } from './entities/book-loan.entity';
+import {
+  BookLoanJoinResponseDto,
+  BookLoanResponseDto,
+  CreateBookLoanDto,
+} from './dto';
 
 @ApiTags('Book Loans')
 @Controller('book-loans')
@@ -13,6 +17,7 @@ export class BookLoansController {
   @ApiResponse({
     status: 201,
     description: 'Book loan is created successfully.',
+    type: BookLoanJoinResponseDto,
   })
   @Post()
   create(@Body() createBookLoanDto: CreateBookLoanDto): Promise<BookLoan> {
@@ -23,6 +28,7 @@ export class BookLoansController {
   @ApiResponse({
     status: 200,
     description: 'Book is return successfully.',
+    type: BookLoanJoinResponseDto,
   })
   @Patch(':code/return')
   update(@Param('code') code: string): Promise<BookLoan> {
@@ -33,19 +39,10 @@ export class BookLoansController {
   @ApiResponse({
     status: 200,
     description: 'Book loans are returned successfully.',
+    type: BookLoanResponseDto,
   })
   @Get()
   findAll() {
     return this.bookLoansService.findAllBookLoan();
   }
-
-  // @Get(':code')
-  // findOne(@Param('code') code: string) {
-  //   return this.bookLoansService.findOne(+code);
-  // }
-
-  // @Delete(':code')
-  // remove(@Param('code') code: string) {
-  //   return this.bookLoansService.remove(+code);
-  // }
 }

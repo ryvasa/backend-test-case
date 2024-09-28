@@ -5,7 +5,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateBookLoanDto } from './dto/create-book-loan.dto';
 import { BookLoan } from './entities/book-loan.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BooksService } from 'src/books/books.service';
@@ -14,17 +13,13 @@ import { DataSource, IsNull, QueryRunner, Repository } from 'typeorm';
 import { Book } from 'src/books/entities/book.entity';
 import { Member } from 'src/members/entities/member.entity';
 import { PenaltiesService } from 'src/penalties/penalties.service';
-// import { Penalty } from 'src/penalties/entities/penalty.entity';
+import { CreateBookLoanDto } from './dto';
 
 @Injectable()
 export class BookLoansService {
   constructor(
     @InjectRepository(BookLoan)
     private bookLoanRepository: Repository<BookLoan>,
-    // @InjectRepository(Penalty)
-    // private penaltyRepository: Repository<Penalty>,
-    // @InjectRepository(Book)
-    // private bookRepository: Repository<Book>,
     @Inject(forwardRef(() => PenaltiesService))
     private readonly penaltiesService: PenaltiesService,
     private readonly booksService: BooksService,
@@ -38,18 +33,23 @@ export class BookLoansService {
     await queryRunner.startTransaction();
 
     try {
-      const book: Book = await this.booksService.findOneByCode(
+      const book: Book = await this.booksService.findOneBook(
         createBookLoanDto.book_code,
       );
       if (book.stock <= 0) {
-        throw new BadRequestException('Stock buku tidak tersedia');
+        throw new BadRequestException(
+          'Stock tidak tersedia, buku sedang dipinjam pengguna lain',
+        );
       }
 
-      const member: Member = await this.membersService.findOne(
+      const member: Member = await this.membersService.findOneMember(
         createBookLoanDto.member_code,
       );
 
-      // TODO: tambahkan check member/penalty yang meminjam buku
+      // check member penalty yang meminjam buku
+      await this.penaltiesService.checkPenaltyMember(
+        createBookLoanDto.member_code,
+      );
 
       await this.countActiveLoanedBooks(createBookLoanDto.member_code);
 
@@ -59,7 +59,7 @@ export class BookLoansService {
       });
 
       if (bookLoan) {
-        await this.booksService.update(
+        await this.booksService.updateBook(
           book.code,
           {
             stock: book.stock - 1,
@@ -91,7 +91,7 @@ export class BookLoansService {
     await queryRunner.startTransaction();
 
     try {
-      await this.findOne(code);
+      await this.findOneBookLoan(code);
 
       const bookLoan: BookLoan = await queryRunner.manager
         .createQueryBuilder(BookLoan, 'book_loans')
@@ -101,18 +101,19 @@ export class BookLoansService {
         .getOne();
 
       if (bookLoan.return_date) {
-        throw new BadRequestException('Buku ini telah di kembalikan');
+        throw new BadRequestException(
+          `Buku ini telah di kembalikan tanggal ${bookLoan.return_date}`,
+        );
       }
 
-      // tanggal di ubah tapi tidak di save?
       bookLoan.return_date = new Date();
 
       // update book stock
       if (bookLoan.return_date) {
-        const book: Book = await this.booksService.findOneByCode(
+        const book: Book = await this.booksService.findOneBook(
           bookLoan.book.code,
         );
-        await this.booksService.update(
+        await this.booksService.updateBook(
           book.code,
           {
             stock: book.stock + 1,
@@ -121,7 +122,7 @@ export class BookLoansService {
         );
       }
 
-      // creae penalty if it exceeds the expected return date
+      // creae penalty if it return_date more than expected_return_date
       if (bookLoan.return_date > bookLoan.expected_return_date) {
         await this.penaltiesService.createPenalty(
           {
@@ -159,7 +160,7 @@ export class BookLoansService {
     return bookLoans;
   }
 
-  async findOne(code: string): Promise<BookLoan> {
+  async findOneBookLoan(code: string): Promise<BookLoan> {
     const bookLoan: BookLoan = await this.bookLoanRepository.findOneBy({
       code,
     });
@@ -169,44 +170,7 @@ export class BookLoansService {
     return bookLoan;
   }
 
-  // async returnBook(code: string): Promise<BookLoan> {
-  //   await this.findOne(code);
-
-  //   const bookLoan: BookLoan = await this.bookLoanRepository
-  //     .createQueryBuilder('book_loans')
-  //     .leftJoinAndSelect('book_loans.member', 'member')
-  //     .leftJoinAndSelect('book_loans.book', 'book')
-  //     .where('book_loans.code = :code', { code })
-  //     .getOne();
-
-  //   if (bookLoan.return_date) {
-  //     throw new BadRequestException('Buku ini telah di kembalikan');
-  //   }
-
-  //   // set return book with the current time
-  //   bookLoan.return_date = new Date();
-
-  //   await this.penaltiesService.createPenalty({
-  //     member_code: bookLoan.member.code,
-  //     book_loan_code: bookLoan.code,
-  //   });
-
-  //   if (bookLoan.return_date !== null) {
-  //     const book = await this.booksService.findOneByCode(bookLoan.book.code);
-  //     // increase book stocks
-  //     await this.booksService.update(book.code, {
-  //       stock: book.stock + 1,
-  //     });
-  //   }
-
-  //   return this.bookLoanRepository.save(bookLoan);
-  // }
-
   findAllBookLoan(): Promise<BookLoan[]> {
     return this.bookLoanRepository.find();
   }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} bookLoan`;
-  // }
 }
