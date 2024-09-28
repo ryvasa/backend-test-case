@@ -4,12 +4,11 @@ import { PenaltiesController } from './penalties.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Penalty } from './entities/penalty.entity';
 import { MembersModule } from 'src/members/members.module';
-import { BookLoan } from 'src/book-loans/entities/book-loan.entity';
 import { BookLoansModule } from 'src/book-loans/book-loans.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Penalty, BookLoan]),
+    TypeOrmModule.forFeature([Penalty]),
     MembersModule,
     forwardRef(() => BookLoansModule),
   ],

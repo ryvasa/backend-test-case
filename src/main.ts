@@ -9,7 +9,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Member & Book')
-    .setDescription('Book and member management API')
+    .setDescription('Library management API')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);

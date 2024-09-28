@@ -38,7 +38,7 @@ export class BookLoansService {
       );
       if (book.stock <= 0) {
         throw new BadRequestException(
-          'Stock tidak tersedia, buku sedang dipinjam pengguna lain',
+          'Stock is not available, the book is being borrowed by another user.',
         );
       }
 
@@ -66,11 +66,11 @@ export class BookLoansService {
           },
           queryRunner,
         );
+
+        const count: number = await queryRunner.manager.count(BookLoan);
+
+        bookLoan.code = `L${(count + 1).toString().padStart(3, '0')}`;
       }
-
-      const count: number = await queryRunner.manager.count(BookLoan);
-
-      bookLoan.code = `L${(count + 1).toString().padStart(3, '0')}`;
 
       await queryRunner.manager.save(BookLoan, bookLoan);
 
@@ -78,7 +78,8 @@ export class BookLoansService {
       return bookLoan;
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      throw new Error(err);
+
+      throw err;
     } finally {
       await queryRunner.release();
     }
@@ -102,7 +103,7 @@ export class BookLoansService {
 
       if (bookLoan.return_date) {
         throw new BadRequestException(
-          `Buku ini telah di kembalikan tanggal ${bookLoan.return_date}`,
+          `This book was returned on date ${bookLoan.return_date}.`,
         );
       }
 
@@ -139,7 +140,7 @@ export class BookLoansService {
       return bookLoan;
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      throw new Error(err);
+      throw err;
     } finally {
       await queryRunner.release();
     }
@@ -154,7 +155,7 @@ export class BookLoansService {
     });
 
     if (bookLoans >= 2) {
-      throw new BadRequestException('Tidak bisa meminjam lebih dari 2 buku');
+      throw new BadRequestException('Cannot borrow more than 2 books.');
     }
 
     return bookLoans;

@@ -31,7 +31,7 @@ export class MembersController {
     type: MemberResponseDto,
   })
   @Post()
-  create(@Body() createMemberDto: CreateMemberDto): Promise<Member> {
+  createMember(@Body() createMemberDto: CreateMemberDto): Promise<Member> {
     return this.memberService.createMember(createMemberDto);
   }
 
@@ -57,7 +57,7 @@ export class MembersController {
     type: MemberLoanResponseDto,
   })
   @Get('loans')
-  findAllMemberHistory(): Promise<Member[]> {
+  findAllMemberHistoryLoan(): Promise<Member[]> {
     return this.memberService.findAllMemberHistoryLoan();
   }
 
@@ -68,7 +68,7 @@ export class MembersController {
     type: MemberResponseDto,
   })
   @Get(':code')
-  findOne(@Param('code') code: string): Promise<Member> {
+  findOneMember(@Param('code') code: string): Promise<Member> {
     return this.memberService.findOneMember(code);
   }
 
@@ -79,7 +79,7 @@ export class MembersController {
     type: MemberResponseDto,
   })
   @Patch(':code')
-  update(
+  updateMember(
     @Param('code') code: string,
     @Body() updateMemberDto: UpdateMemberDto,
   ): Promise<Member> {
@@ -93,7 +93,7 @@ export class MembersController {
     type: MemberMessageResponseDto,
   })
   @Delete(':code')
-  remove(@Param('code') code: string): Promise<object> {
+  deleteMember(@Param('code') code: string): Promise<object> {
     return this.memberService.deleteMember(code);
   }
 }

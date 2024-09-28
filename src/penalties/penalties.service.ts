@@ -78,7 +78,7 @@ export class PenaltiesService {
   }
 
   async checkPenaltyMember(code: string): Promise<void> {
-    // mengambil hanya satu data dengan penalty end date paling lama
+    // take only one data with the longest penalty end date
     const penalty = await this.penaltyRepository
       .createQueryBuilder('penalties')
       .leftJoinAndSelect('penalties.member', 'member')
@@ -88,8 +88,8 @@ export class PenaltiesService {
       .getOne();
 
     if (penalty) {
-      throw new Error(
-        `Member ${penalty.member.code} memiliki penalty sampai tanggal ${penalty.penalty_end_date}`,
+      throw new BadRequestException(
+        `Member ${penalty.member.code} has a penalty period until date ${penalty.penalty_end_date}`,
       );
     }
   }
@@ -103,7 +103,7 @@ export class PenaltiesService {
 
     if (penalty) {
       throw new BadRequestException(
-        `Peminjaman ${penalty.book_loan.code} telah diberikan penalty sebelumnya, dan akan selesai pada ${penalty.penalty_end_date}`,
+        `Loan ${penalty.book_loan.code} has been given a penalty previously, and will be finished on the date ${penalty.penalty_end_date}`,
       );
     }
   }

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Book } from './entities/book.entity';
 import { MoreThan, QueryRunner, Repository } from 'typeorm';
@@ -20,7 +24,7 @@ export class BooksService {
       code: createBookDto.code,
     });
     if (existBook) {
-      throw new NotFoundException(
+      throw new BadRequestException(
         'Book already exists, you can change stok book',
       );
     }
@@ -60,8 +64,8 @@ export class BooksService {
   }
 
   async deleteBook(code: string): Promise<object> {
-    const book: Book = await this.findOneBook(code);
-    await this.bookRepository.remove(book);
+    await this.findOneBook(code);
+    await this.bookRepository.delete(code);
     return { message: 'Book is deleted successfully.' };
   }
 }

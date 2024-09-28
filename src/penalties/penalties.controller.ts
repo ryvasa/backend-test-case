@@ -14,14 +14,18 @@ import { CreatePenaltyDto } from './dto';
 export class PenaltiesController {
   constructor(private readonly penaltiesService: PenaltiesService) {}
 
-  @ApiOperation({ summary: 'Create a penalty' })
+  @ApiOperation({
+    summary: 'Create a penalty ',
+    description:
+      'NOTE: This endpoint was only created for testing purposes, the penalty is actually created automatically when returning a book after the expected return date',
+  })
   @ApiResponse({
     status: 201,
     description: 'Created penalty',
     type: AddPenaltyResponseDto,
   })
   @Post()
-  create(@Body() createPenaltyDto: CreatePenaltyDto): Promise<Penalty> {
+  createPenalty(@Body() createPenaltyDto: CreatePenaltyDto): Promise<Penalty> {
     return this.penaltiesService.createPenalty(createPenaltyDto);
   }
 
@@ -32,7 +36,7 @@ export class PenaltiesController {
     type: PenaltiesResponseDto,
   })
   @Get()
-  findAll(): Promise<Penalty[]> {
+  findAllPenalty(): Promise<Penalty[]> {
     return this.penaltiesService.findAllPenalty();
   }
 
@@ -43,7 +47,7 @@ export class PenaltiesController {
     type: PenaltyJoinResponseDto,
   })
   @Get(':member_code')
-  findPenlatiesByMember(
+  findPenaltiesByMember(
     @Param('member_code') member_code: string,
   ): Promise<Penalty[]> {
     return this.penaltiesService.findPenaltiesByMember(member_code);

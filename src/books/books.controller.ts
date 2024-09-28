@@ -30,7 +30,7 @@ export class BooksController {
     type: BookResponseDto,
   })
   @Post()
-  create(@Body() createBookDto: CreateBookDto): Promise<Book> {
+  createBook(@Body() createBookDto: CreateBookDto): Promise<Book> {
     return this.booksService.addBook(createBookDto);
   }
 
@@ -41,7 +41,7 @@ export class BooksController {
     type: BooksResponseDto,
   })
   @Get()
-  findAll(): Promise<Book[]> {
+  findAllBooks(): Promise<Book[]> {
     return this.booksService.findAllBook();
   }
 
@@ -52,7 +52,7 @@ export class BooksController {
     type: BookResponseDto,
   })
   @Get(':code')
-  findOne(@Param('code') code: string): Promise<Book> {
+  findOneBook(@Param('code') code: string): Promise<Book> {
     return this.booksService.findOneBook(code);
   }
 
@@ -63,7 +63,7 @@ export class BooksController {
     type: BookResponseDto,
   })
   @Patch(':code')
-  update(
+  updateBook(
     @Param('code') code: string,
     @Body() updateBookDto: UpdateBookDto,
   ): Promise<Book> {
@@ -77,7 +77,7 @@ export class BooksController {
     type: BookMessageResponseDto,
   })
   @Delete(':code')
-  remove(@Param('code') code: string): Promise<object> {
+  deleteBook(@Param('code') code: string): Promise<object> {
     return this.booksService.deleteBook(code);
   }
 }
